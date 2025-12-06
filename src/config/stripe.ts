@@ -1,4 +1,4 @@
-import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeElementLocale } from '@stripe/stripe-js';
 
 // Configuration Stripe
 export const STRIPE_CONFIG = {
@@ -44,7 +44,7 @@ export const validateStripeConfig = (): boolean => {
 // Options par défaut pour les paiements
 export const DEFAULT_PAYMENT_OPTIONS = {
   currency: STRIPE_CONFIG.currency, // Déjà en minuscules depuis STRIPE_CONFIG
-  locale: 'fr',
+  locale: 'fr' as StripeElementLocale,
   appearance: {
     theme: 'stripe' as const,
     variables: {

@@ -246,8 +246,6 @@ const OICCashierPage: React.FC = () => {
       if (showDetailedHelp) {
         console.log('🔍 Informations de débogage:', {
           userId: user?.id,
-          validatorId,
-          validatorName,
           orderId: foundOrder?.id,
           orderNumber: foundOrder?.orderNumber,
           userAuthenticated: !!user

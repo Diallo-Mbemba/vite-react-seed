@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Plan } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
-import { X, CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, CreditCard, Lock, AlertCircle } from 'lucide-react';
 import { getStripe, DEFAULT_PAYMENT_OPTIONS, validateStripeConfig } from '../../config/stripe';
 import { stripeService, PaymentIntentData } from '../../services/stripeService';
 import { createOrder, updateOrderStatus } from '../../utils/orderUtils';

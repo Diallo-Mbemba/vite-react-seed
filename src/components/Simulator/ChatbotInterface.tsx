@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Minimize2, Maximize2, X, Sparkles, Zap, Settings } from 'lucide-react';
+import { Send, Bot, User, Minimize2, Sparkles, Zap, Settings } from 'lucide-react';
 import HybridChatbotService, { HybridResponse } from '../../services/hybridChatbotService';
 import OpenAIConfigModal from './OpenAIConfigModal';
 
@@ -221,12 +221,12 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({
                   <div className="flex items-center space-x-1">
                     {message.source === 'openai' ? (
                       <div className="flex items-center space-x-1 bg-purple-100 px-2 py-1 rounded-full">
-                        <Sparkles className="h-4 w-4 flex-shrink-0 text-purple-600 animate-pulse" title="Powered by GPT-4" />
+                        <Sparkles className="h-4 w-4 flex-shrink-0 text-purple-600 animate-pulse" />
                         <span className="text-xs text-purple-700 font-medium">GPT-4</span>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-1 bg-orange-100 px-2 py-1 rounded-full">
-                        <Bot className="h-4 w-4 flex-shrink-0 text-orange-600" title="IA Locale" />
+                        <Bot className="h-4 w-4 flex-shrink-0 text-orange-600" />
                         <span className="text-xs text-orange-700 font-medium">Local</span>
                       </div>
                     )}

@@ -123,10 +123,10 @@ export const generatePeriodSalesReport = (startDate: Date, endDate: Date): Sales
 };
 
 // Formater la monnaie
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount: number, currency: string = 'XOF'): string => {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'XOF',
+    currency: currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(amount);

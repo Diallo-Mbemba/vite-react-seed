@@ -15,9 +15,12 @@ const TECDataTable: React.FC = () => {
   const [filterColumn, setFilterColumn] = useState('all');
 
   useEffect(() => {
-    const data = getTECArticles();
-    setArticles(data);
-    setFilteredArticles(data);
+    const loadData = async () => {
+      const data = await getTECArticles();
+      setArticles(data);
+      setFilteredArticles(data);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {

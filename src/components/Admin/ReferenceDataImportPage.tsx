@@ -73,13 +73,13 @@ const ReferenceDataImportPage: React.FC = () => {
     try {
       switch (selectedType) {
         case 'tec':
-          await referenceDataService.clearAllTECArticles();
+          await referenceDataService.deleteReferenceData('tec');
           break;
         case 'voc':
-          await referenceDataService.clearAllVOCProducts();
+          await referenceDataService.deleteReferenceData('voc');
           break;
         case 'tarifport':
-          await referenceDataService.clearAllTarifPORTProducts();
+          await referenceDataService.deleteReferenceData('tarifport');
           break;
       }
       setResult({

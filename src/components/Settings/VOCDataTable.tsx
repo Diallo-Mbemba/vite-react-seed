@@ -16,9 +16,12 @@ const VOCDataTable: React.FC = () => {
   const [filterExempte, setFilterExempte] = useState('all');
 
   useEffect(() => {
-    const data = getVOCProducts();
-    setProducts(data);
-    setFilteredProducts(data);
+    const loadData = async () => {
+      const data = await getVOCProducts();
+      setProducts(data);
+      setFilteredProducts(data);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
