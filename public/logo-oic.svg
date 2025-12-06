@@ -1,0 +1,51 @@
+<svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fond blanc -->
+  <rect width="200" height="120" fill="white"/>
+  
+  <!-- Groupe principal du logo -->
+  <g transform="translate(20, 20)">
+    <!-- "o" - Cercle avec icônes de transport -->
+    <circle cx="25" cy="25" r="20" fill="#1e40af"/>
+    <circle cx="25" cy="25" r="16" fill="#1d4ed8"/>
+    
+    <!-- Icônes de transport en blanc -->
+    <!-- Avion -->
+    <rect x="18" y="18" width="14" height="2" fill="white" rx="1" transform="rotate(12 25 19)"/>
+    <!-- Train -->
+    <rect x="15" y="23" width="20" height="2" fill="white" rx="1"/>
+    <!-- Camion -->
+    <rect x="16" y="28" width="18" height="2" fill="white" rx="1" transform="rotate(-6 25 29)"/>
+    
+    <!-- "i" - Barre verticale avec drapeau ivoirien -->
+    <rect x="55" y="5" width="6" height="40" fill="#1e40af" rx="3"/>
+    <!-- Drapeau ivoirien -->
+    <rect x="52" y="5" width="12" height="8" rx="1">
+      <defs>
+        <linearGradient id="flag" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#ff8c00"/>
+          <stop offset="33%" style="stop-color:#ff8c00"/>
+          <stop offset="33%" style="stop-color:#ffffff"/>
+          <stop offset="66%" style="stop-color:#ffffff"/>
+          <stop offset="66%" style="stop-color:#00a651"/>
+          <stop offset="100%" style="stop-color:#00a651"/>
+        </linearGradient>
+      </defs>
+      <rect x="52" y="5" width="12" height="8" fill="url(#flag)" rx="1"/>
+    </rect>
+    
+    <!-- "C" - Croissant -->
+    <path d="M 85 5 A 20 20 0 0 1 85 45 A 20 20 0 0 1 85 5" stroke="#1e40af" stroke-width="8" fill="none" stroke-linecap="round"/>
+    
+    <!-- Lignes ondulées -->
+    <path d="M 5 60 Q 25 58 45 60 Q 65 62 85 60" stroke="#ff8c00" stroke-width="2" fill="none"/>
+    <path d="M 5 70 Q 25 72 45 70 Q 65 68 85 70" stroke="#00a651" stroke-width="2" fill="none"/>
+    
+    <!-- Texte "Office Ivoirien des Chargeurs" -->
+    <text x="100" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e40af">
+      Office Ivoirien des
+    </text>
+    <text x="100" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e40af">
+      Chargeurs
+    </text>
+  </g>
+</svg> 

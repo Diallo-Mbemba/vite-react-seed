@@ -1,0 +1,1268 @@
+================================================================================
+                    SCHÉMA BASE DE DONNÉES SUPABASE
+                    APPLICATION SAAS KPrague
+                    Simulation de Coûts d'Importation
+================================================================================
+
+📋 TABLE DES MATIÈRES
+=====================
+
+1. Tables Principales (Utilisateurs & Abonnements)
+2. Tables de Simulation
+3. Tables de Référence (TEC, VOC, TarifPORT)
+4. Tables de Support
+5. Index et Contraintes
+6. Politiques de Sécurité (RLS)
+7. Fonctions et Triggers
+8. Données Initiales
+9. Instructions de Déploiement
+10. Configuration de l'Application
+11. Variables d'Environnement
+12. Intégration Client Supabase
+13. Notes Importantes
+
+================================================================================
+1. TABLES PRINCIPALES (UTILISATEURS & ABONNEMENTS)
+================================================================================
+
+-- Table users - Gestion des utilisateurs
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  plan_type VARCHAR(50) DEFAULT 'free' CHECK (plan_type IN ('free', 'bronze', 'silver', 'gold', 'diamond')),
+  remaining_credits INTEGER DEFAULT 3,
+  total_credits INTEGER DEFAULT 3,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table subscriptions - Gestion des abonnements
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  plan_type VARCHAR(50) NOT NULL,
+  status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'expired')),
+  credits_purchased INTEGER NOT NULL,
+  price_paid DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'XAF',
+  payment_method VARCHAR(50),
+  payment_status VARCHAR(50) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'completed', 'failed')),
+  stripe_subscription_id VARCHAR(255),
+  stripe_payment_intent_id VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Table payments - Historique des paiements
+CREATE TABLE payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  subscription_id UUID REFERENCES subscriptions(id),
+  amount DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'XAF',
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
+  payment_method VARCHAR(50),
+  stripe_payment_intent_id VARCHAR(255),
+  stripe_charge_id VARCHAR(255),
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  processed_at TIMESTAMP WITH TIME ZONE
+);
+
+================================================================================
+2. TABLES DE SIMULATION
+================================================================================
+
+-- Table simulations - Simulations de coûts
+CREATE TABLE simulations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  product_name VARCHAR(255) NOT NULL,
+  numero_facture VARCHAR(100),
+  fournisseur VARCHAR(255),
+  fob DECIMAL(15,2) NOT NULL,
+  fret DECIMAL(15,2) NOT NULL,
+  assurance DECIMAL(15,2) NOT NULL,
+  droit_douane DECIMAL(15,2) NOT NULL,
+  frais_financiers DECIMAL(15,2) NOT NULL,
+  prestation_transitaire DECIMAL(15,2) NOT NULL,
+  rpi DECIMAL(15,2) NOT NULL,
+  coc DECIMAL(15,2) NOT NULL,
+  bsc DECIMAL(15,2) NOT NULL,
+  credit_enlevement DECIMAL(15,2) NOT NULL,
+  rrr DECIMAL(15,2) NOT NULL,
+  rcp DECIMAL(15,2) NOT NULL,
+  total_cost DECIMAL(15,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'XAF',
+  status VARCHAR(50) DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'deleted')),
+  active_tab VARCHAR(50),
+  max_step_reached INTEGER DEFAULT 1,
+  form_data JSONB,
+  auto_calculations JSONB,
+  criteria JSONB,
+  selected_actors JSONB,
+  correction_history JSONB,
+  tariffs JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table simulation_articles - Articles des simulations
+CREATE TABLE simulation_articles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  simulation_id UUID REFERENCES simulations(id) ON DELETE CASCADE,
+  code_hs VARCHAR(20) NOT NULL,
+  designation TEXT NOT NULL,
+  quantite INTEGER NOT NULL,
+  prix_unitaire DECIMAL(15,2) NOT NULL,
+  prix_total DECIMAL(15,2) NOT NULL,
+  poids DECIMAL(10,2),
+  taux_droit DECIMAL(5,2),
+  montant_droit DECIMAL(15,2),
+  prix_total_importe DECIMAL(15,2),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table actors - Acteurs commerciaux
+CREATE TABLE actors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nom VARCHAR(255) NOT NULL,
+  adresse TEXT NOT NULL,
+  telephone VARCHAR(50),
+  email VARCHAR(255),
+  type VARCHAR(50) NOT NULL CHECK (type IN ('importateur', 'fournisseur', 'transitaire')),
+  zone VARCHAR(100),
+  pays VARCHAR(2), -- Code ISO du pays (ex: 'FR', 'DE', 'CN')
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+================================================================================
+3. TABLES DE RÉFÉRENCE (TEC, VOC, TarifPORT)
+================================================================================
+
+-- Table tec_articles - Tarif Extérieur Commun
+CREATE TABLE tec_articles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sh10_code VARCHAR(20) UNIQUE NOT NULL,
+  designation TEXT NOT NULL,
+  us VARCHAR(10),
+  dd DECIMAL(5,2),
+  rsta DECIMAL(5,2),
+  pcs DECIMAL(5,2),
+  pua DECIMAL(5,2),
+  pcc DECIMAL(5,2),
+  rrr VARCHAR(10),
+  rcp VARCHAR(10),
+  cumul_sans_tva DECIMAL(15,2),
+  cumul_avec_tva DECIMAL(15,2),
+  tva DECIMAL(5,2),
+  sh6_code VARCHAR(10),
+  tub VARCHAR(10),
+  dus VARCHAR(10),
+  dud VARCHAR(10),
+  tcb VARCHAR(10),
+  tsm VARCHAR(10),
+  tsb VARCHAR(10),
+  psv VARCHAR(10),
+  tai VARCHAR(10),
+  tab VARCHAR(10),
+  tuf VARCHAR(10),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table voc_products - Valeur en Consommation
+CREATE TABLE voc_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code_sh VARCHAR(20) UNIQUE NOT NULL,
+  designation TEXT NOT NULL,
+  observation TEXT,
+  exempte BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table tarifport_products - Tarifs du Port
+CREATE TABLE tarifport_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  libelle_produit TEXT NOT NULL,
+  chapitre VARCHAR(10),
+  tp VARCHAR(10),
+  coderedevance VARCHAR(10),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table currencies - Devises
+CREATE TABLE currencies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(3) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  symbol VARCHAR(10) NOT NULL,
+  exchange_rate DECIMAL(10,6) NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table incoterms - Incoterms
+CREATE TABLE incoterms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(10) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  category VARCHAR(20) CHECK (category IN ('maritime', 'multimodal')),
+  risk_transfer VARCHAR(100),
+  cost_responsibility TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+================================================================================
+4. TABLES DE SUPPORT
+================================================================================
+
+-- Table user_settings - Paramètres utilisateur
+CREATE TABLE user_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  default_currency VARCHAR(3) DEFAULT 'XAF',
+  auto_save BOOLEAN DEFAULT TRUE,
+  notifications_enabled BOOLEAN DEFAULT TRUE,
+  theme VARCHAR(20) DEFAULT 'light',
+  language VARCHAR(10) DEFAULT 'fr',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table simulation_logs - Logs des simulations
+CREATE TABLE simulation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  simulation_id UUID REFERENCES simulations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  action VARCHAR(100) NOT NULL,
+  details JSONB,
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+================================================================================
+5. INDEX ET CONTRAINTES
+================================================================================
+
+-- Index pour les performances
+CREATE INDEX idx_simulations_user_id ON simulations(user_id);
+CREATE INDEX idx_simulations_status ON simulations(status);
+CREATE INDEX idx_simulations_created_at ON simulations(created_at);
+CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX idx_payments_user_id ON payments(user_id);
+CREATE INDEX idx_tec_articles_sh10_code ON tec_articles(sh10_code);
+CREATE INDEX idx_voc_products_code_sh ON voc_products(code_sh);
+CREATE INDEX idx_actors_type ON actors(type);
+CREATE INDEX idx_simulation_articles_simulation_id ON simulation_articles(simulation_id);
+CREATE INDEX idx_user_settings_user_id ON user_settings(user_id);
+CREATE INDEX idx_simulation_logs_simulation_id ON simulation_logs(simulation_id);
+CREATE INDEX idx_simulation_logs_user_id ON simulation_logs(user_id);
+
+-- Index pour les recherches textuelles
+CREATE INDEX idx_tec_articles_designation_gin ON tec_articles USING gin(to_tsvector('french', designation));
+CREATE INDEX idx_voc_products_designation_gin ON voc_products USING gin(to_tsvector('french', designation));
+CREATE INDEX idx_tarifport_products_libelle_gin ON tarifport_products USING gin(to_tsvector('french', libelle_produit));
+CREATE INDEX idx_actors_nom_gin ON actors USING gin(to_tsvector('french', nom));
+
+-- Index composites pour les requêtes fréquentes
+CREATE INDEX idx_simulations_user_status ON simulations(user_id, status);
+CREATE INDEX idx_subscriptions_user_status ON subscriptions(user_id, status);
+CREATE INDEX idx_payments_user_status ON payments(user_id, status);
+
+================================================================================
+6. POLITIQUES DE SÉCURITÉ (ROW LEVEL SECURITY)
+================================================================================
+
+-- Activer RLS sur toutes les tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulation_articles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE actors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulation_logs ENABLE ROW LEVEL SECURITY;
+
+-- Politiques pour les utilisateurs
+CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON users FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Politiques pour les simulations
+CREATE POLICY "Users can view own simulations" ON simulations FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own simulations" ON simulations FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own simulations" ON simulations FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own simulations" ON simulations FOR DELETE USING (auth.uid() = user_id);
+
+-- Politiques pour les articles de simulation
+CREATE POLICY "Users can view own simulation articles" ON simulation_articles FOR SELECT USING (
+  EXISTS (SELECT 1 FROM simulations WHERE simulations.id = simulation_articles.simulation_id AND simulations.user_id = auth.uid())
+);
+CREATE POLICY "Users can insert own simulation articles" ON simulation_articles FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM simulations WHERE simulations.id = simulation_articles.simulation_id AND simulations.user_id = auth.uid())
+);
+CREATE POLICY "Users can update own simulation articles" ON simulation_articles FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM simulations WHERE simulations.id = simulation_articles.simulation_id AND simulations.user_id = auth.uid())
+);
+CREATE POLICY "Users can delete own simulation articles" ON simulation_articles FOR DELETE USING (
+  EXISTS (SELECT 1 FROM simulations WHERE simulations.id = simulation_articles.simulation_id AND simulations.user_id = auth.uid())
+);
+
+-- Politiques pour les abonnements
+CREATE POLICY "Users can view own subscriptions" ON subscriptions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own subscriptions" ON subscriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own subscriptions" ON subscriptions FOR UPDATE USING (auth.uid() = user_id);
+
+-- Politiques pour les paiements
+CREATE POLICY "Users can view own payments" ON payments FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own payments" ON payments FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Politiques pour les acteurs (lecture seule pour tous)
+CREATE POLICY "Users can view all actors" ON actors FOR SELECT USING (true);
+CREATE POLICY "Users can insert actors" ON actors FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Users can update actors" ON actors FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- Politiques pour les paramètres utilisateur
+CREATE POLICY "Users can view own settings" ON user_settings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own settings" ON user_settings FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own settings" ON user_settings FOR UPDATE USING (auth.uid() = user_id);
+
+-- Politiques pour les logs de simulation
+CREATE POLICY "Users can view own simulation logs" ON simulation_logs FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own simulation logs" ON simulation_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Politiques pour les tables de référence (lecture seule)
+CREATE POLICY "Users can view tec articles" ON tec_articles FOR SELECT USING (true);
+CREATE POLICY "Users can view voc products" ON voc_products FOR SELECT USING (true);
+CREATE POLICY "Users can view tarifport products" ON tarifport_products FOR SELECT USING (true);
+CREATE POLICY "Users can view currencies" ON currencies FOR SELECT USING (true);
+CREATE POLICY "Users can view incoterms" ON incoterms FOR SELECT USING (true);
+
+================================================================================
+7. FONCTIONS ET TRIGGERS
+================================================================================
+
+-- Fonction pour mettre à jour updated_at automatiquement
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Triggers pour updated_at
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_simulations_updated_at BEFORE UPDATE ON simulations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_actors_updated_at BEFORE UPDATE ON actors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_currencies_updated_at BEFORE UPDATE ON currencies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON user_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Fonction pour déduire automatiquement les crédits
+CREATE OR REPLACE FUNCTION deduct_user_credit()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE users 
+    SET remaining_credits = remaining_credits - 1
+    WHERE id = NEW.user_id AND remaining_credits > 0;
+    
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Crédits insuffisants pour créer une simulation';
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger pour déduire les crédits lors de la création d'une simulation
+CREATE TRIGGER deduct_credit_on_simulation_insert 
+    BEFORE INSERT ON simulations 
+    FOR EACH ROW 
+    EXECUTE FUNCTION deduct_user_credit();
+
+================================================================================
+8. DONNÉES INITIALES
+================================================================================
+
+-- Insertion des devises de base
+INSERT INTO currencies (code, name, symbol, exchange_rate) VALUES
+('XAF', 'Franc CFA (CEMAC)', 'FCFA', 1.000000),
+('EUR', 'Euro', '€', 655.957000),
+('USD', 'Dollar US', '$', 600.000000),
+('GBP', 'Livre Sterling', '£', 750.000000),
+('CNY', 'Yuan Chinois', '¥', 85.000000);
+
+-- Insertion des Incoterms de base
+INSERT INTO incoterms (code, name, description, category, risk_transfer, cost_responsibility) VALUES
+('EXW', 'Ex Works (À l''usine)', 'Le vendeur met la marchandise à disposition dans ses locaux', 'multimodal', 'Locaux du vendeur', 'Acheteur prend en charge tous les coûts'),
+('FCA', 'Free Carrier (Franco transporteur)', 'Le vendeur remet la marchandise au transporteur désigné par l''acheteur', 'multimodal', 'Remise au transporteur', 'Vendeur jusqu''au transporteur'),
+('CPT', 'Carriage Paid To (Port payé jusqu''à)', 'Le vendeur paie le transport jusqu''au lieu de destination convenu', 'multimodal', 'Remise au transporteur', 'Vendeur paie le transport principal'),
+('CIP', 'Carriage and Insurance Paid To (Port payé, assurance comprise)', 'Le vendeur paie transport et assurance jusqu''au lieu de destination', 'multimodal', 'Remise au transporteur', 'Vendeur paie transport et assurance'),
+('DAP', 'Delivered At Place (Rendu au lieu de destination)', 'Le vendeur livre la marchandise au lieu de destination convenu', 'multimodal', 'Lieu de destination', 'Vendeur jusqu''au lieu de destination'),
+('DPU', 'Delivered at Place Unloaded (Rendu au lieu de destination déchargé)', 'Le vendeur livre et décharge la marchandise au lieu convenu', 'multimodal', 'Après déchargement', 'Vendeur inclut déchargement'),
+('DDP', 'Delivered Duty Paid (Rendu droits acquittés)', 'Le vendeur livre la marchandise dédouanée au lieu de destination', 'multimodal', 'Lieu de destination final', 'Vendeur paie tous les coûts et droits'),
+('FAS', 'Free Alongside Ship (Franco le long du navire)', 'Le vendeur livre la marchandise le long du navire au port d''embarquement', 'maritime', 'Le long du navire', 'Vendeur jusqu''au port d''embarquement'),
+('FOB', 'Free On Board (Franco à bord)', 'Le vendeur livre la marchandise à bord du navire au port d''embarquement', 'maritime', 'À bord du navire', 'Vendeur jusqu''à bord du navire'),
+('CFR', 'Cost and Freight (Coût et fret)', 'Le vendeur paie les coûts et le fret jusqu''au port de destination', 'maritime', 'À bord du navire au port d''embarquement', 'Vendeur paie le fret maritime'),
+('CIF', 'Cost, Insurance and Freight (Coût, assurance et fret)', 'Le vendeur paie coûts, assurance et fret jusqu''au port de destination', 'maritime', 'À bord du navire au port d''embarquement', 'Vendeur paie fret et assurance maritime');
+
+-- Insertion des acteurs de base
+INSERT INTO actors (nom, adresse, telephone, email, type, pays) VALUES
+('SARL IMPORT PLUS', 'BP 1234, Douala, Cameroun', '+237 233 42 15 67', 'contact@importplus.cm', 'importateur', NULL),
+('CAMEROON TRADE COMPANY', 'Rue de la Liberté, Yaoundé, Cameroun', '+237 222 31 45 89', 'info@camtrade.cm', 'importateur', NULL),
+('AFRICA BUSINESS GROUP', 'Zone Industrielle, Douala, Cameroun', '+237 233 56 78 90', 'contact@africabg.com', 'importateur', NULL),
+('EUROPEAN SUPPLIERS LTD', '123 Business Street, Hamburg, Germany', '+49 40 123 456 789', 'sales@eurosuppliers.de', 'fournisseur', 'DE'),
+('ASIA MANUFACTURING CO.', '456 Industrial Zone, Shanghai, China', '+86 21 987 654 321', 'export@asiamfg.cn', 'fournisseur', 'CN'),
+('FRENCH EXPORT SARL', '789 Avenue de la République, Marseille, France', '+33 4 91 12 34 56', 'commercial@frenchexport.fr', 'fournisseur', 'FR'),
+('BOLLORE LOGISTICS', 'Port Autonome de Douala, Cameroun', '+237 233 40 50 60', 'douala@bollore.com', 'transitaire', NULL),
+('MAERSK CAMEROON', 'Terminal à Conteneurs, Douala, Cameroun', '+237 233 45 67 89', 'cameroon@maersk.com', 'transitaire', NULL),
+('SAGA CAMEROUN', 'Rue des Transitaires, Douala, Cameroun', '+237 233 78 90 12', 'operations@saga.cm', 'transitaire', NULL);
+
+================================================================================
+9. INSTRUCTIONS DE DÉPLOIEMENT
+================================================================================
+
+1. CRÉER UN PROJET SUPABASE
+   - Aller sur https://supabase.com
+   - Créer un nouveau projet
+   - Noter l'URL et la clé API
+
+2. EXÉCUTER LE SCHÉMA
+   - Aller dans l'éditeur SQL de Supabase
+   - Copier-coller tout le contenu de ce fichier
+   - Exécuter le script
+
+3. CONFIGURER L'AUTHENTIFICATION
+   - Aller dans Authentication > Settings
+   - Configurer les providers souhaités (Email, Google, etc.)
+   - Configurer les redirections
+
+4. CONFIGURER LE STORAGE (optionnel)
+   - Aller dans Storage
+   - Créer un bucket 'simulations' pour les fichiers PDF
+   - Configurer les politiques RLS pour le storage
+
+5. CONFIGURER LES WEBHOOKS (optionnel)
+   - Aller dans Database > Hooks
+   - Configurer les webhooks pour Stripe
+
+6. INTÉGRER DANS L'APPLICATION
+   - Remplacer les variables d'environnement dans votre app
+   - Mettre à jour les appels API pour utiliser Supabase
+   - Tester toutes les fonctionnalités
+
+================================================================================
+10. CONFIGURATION DE L'APPLICATION
+================================================================================
+
+📦 INSTALLATION DES DÉPENDANCES
+================================
+
+# Installer le client Supabase
+npm install @supabase/supabase-js
+
+# Installer les types TypeScript (optionnel mais recommandé)
+npm install @supabase/supabase-js @types/node
+
+# Installer les hooks React (si vous utilisez React)
+npm install @supabase/auth-helpers-react
+
+# Installer les utilitaires pour les formulaires
+npm install react-hook-form @hookform/resolvers yup
+
+# Installer les composants UI (optionnel)
+npm install @headlessui/react @heroicons/react
+
+🔧 CONFIGURATION DU CLIENT SUPABASE
+===================================
+
+Créer le fichier: src/lib/supabase.ts
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Variables d\'environnement Supabase manquantes')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+
+// Types pour les tables
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string
+          email: string
+          name: string
+          plan_type: 'free' | 'bronze' | 'silver' | 'gold' | 'diamond'
+          remaining_credits: number
+          total_credits: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          name: string
+          plan_type?: 'free' | 'bronze' | 'silver' | 'gold' | 'diamond'
+          remaining_credits?: number
+          total_credits?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          name?: string
+          plan_type?: 'free' | 'bronze' | 'silver' | 'gold' | 'diamond'
+          remaining_credits?: number
+          total_credits?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      simulations: {
+        Row: {
+          id: string
+          user_id: string
+          product_name: string
+          numero_facture: string | null
+          fournisseur: string | null
+          fob: number
+          fret: number
+          assurance: number
+          droit_douane: number
+          frais_financiers: number
+          prestation_transitaire: number
+          rpi: number
+          coc: number
+          bsc: number
+          credit_enlevement: number
+          rrr: number
+          rcp: number
+          total_cost: number
+          currency: string
+          status: 'in_progress' | 'completed' | 'deleted'
+          active_tab: string | null
+          max_step_reached: number
+          form_data: any
+          auto_calculations: any
+          criteria: any
+          selected_actors: any
+          correction_history: any
+          tariffs: any
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product_name: string
+          numero_facture?: string | null
+          fournisseur?: string | null
+          fob: number
+          fret: number
+          assurance: number
+          droit_douane: number
+          frais_financiers: number
+          prestation_transitaire: number
+          rpi: number
+          coc: number
+          bsc: number
+          credit_enlevement: number
+          rrr: number
+          rcp: number
+          total_cost: number
+          currency?: string
+          status?: 'in_progress' | 'completed' | 'deleted'
+          active_tab?: string | null
+          max_step_reached?: number
+          form_data?: any
+          auto_calculations?: any
+          criteria?: any
+          selected_actors?: any
+          correction_history?: any
+          tariffs?: any
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product_name?: string
+          numero_facture?: string | null
+          fournisseur?: string | null
+          fob?: number
+          fret?: number
+          assurance?: number
+          droit_douane?: number
+          frais_financiers?: number
+          prestation_transitaire?: number
+          rpi?: number
+          coc?: number
+          bsc?: number
+          credit_enlevement?: number
+          rrr?: number
+          rcp?: number
+          total_cost?: number
+          currency?: string
+          status?: 'in_progress' | 'completed' | 'deleted'
+          active_tab?: string | null
+          max_step_reached?: number
+          form_data?: any
+          auto_calculations?: any
+          criteria?: any
+          selected_actors?: any
+          correction_history?: any
+          tariffs?: any
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // Ajouter les autres tables selon vos besoins...
+    }
+  }
+}
+```
+
+🔐 CONTEXTE D'AUTHENTIFICATION
+===============================
+
+Créer le fichier: src/contexts/AuthContext.tsx
+
+```typescript
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { User, Session } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
+
+interface AuthContextType {
+  user: User | null
+  session: Session | null
+  loading: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, name: string) => Promise<void>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Récupérer la session initiale
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Écouter les changements d'authentification
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
+  const signUp = async (email: string, password: string, name: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    })
+    if (error) throw error
+  }
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  }
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    if (error) throw error
+  }
+
+  const value = {
+    user,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    resetPassword,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+```
+
+📊 HOOKS POUR LES DONNÉES
+==========================
+
+Créer le fichier: src/hooks/useSupabase.ts
+
+```typescript
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+
+// Hook pour les simulations
+export function useSimulations() {
+  const [simulations, setSimulations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      fetchSimulations()
+    }
+  }, [user])
+
+  const fetchSimulations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('simulations')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setSimulations(data || [])
+    } catch (error) {
+      console.error('Erreur lors de la récupération des simulations:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createSimulation = async (simulationData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('simulations')
+        .insert([{ ...simulationData, user_id: user?.id }])
+        .select()
+
+      if (error) throw error
+      await fetchSimulations()
+      return data[0]
+    } catch (error) {
+      console.error('Erreur lors de la création de la simulation:', error)
+      throw error
+    }
+  }
+
+  const updateSimulation = async (id: string, updates: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('simulations')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', user?.id)
+        .select()
+
+      if (error) throw error
+      await fetchSimulations()
+      return data[0]
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la simulation:', error)
+      throw error
+    }
+  }
+
+  const deleteSimulation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('simulations')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user?.id)
+
+      if (error) throw error
+      await fetchSimulations()
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la simulation:', error)
+      throw error
+    }
+  }
+
+  return {
+    simulations,
+    loading,
+    createSimulation,
+    updateSimulation,
+    deleteSimulation,
+    refetch: fetchSimulations,
+  }
+}
+
+// Hook pour les données de référence
+export function useReferenceData() {
+  const [tecArticles, setTecArticles] = useState([])
+  const [vocProducts, setVocProducts] = useState([])
+  const [tarifportProducts, setTarifportProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchReferenceData()
+  }, [])
+
+  const fetchReferenceData = async () => {
+    try {
+      const [tecResult, vocResult, tarifportResult] = await Promise.all([
+        supabase.from('tec_articles').select('*'),
+        supabase.from('voc_products').select('*'),
+        supabase.from('tarifport_products').select('*'),
+      ])
+
+      if (tecResult.error) throw tecResult.error
+      if (vocResult.error) throw vocResult.error
+      if (tarifportResult.error) throw tarifportResult.error
+
+      setTecArticles(tecResult.data || [])
+      setVocProducts(vocResult.data || [])
+      setTarifportProducts(tarifportResult.data || [])
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données de référence:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    tecArticles,
+    vocProducts,
+    tarifportProducts,
+    loading,
+    refetch: fetchReferenceData,
+  }
+}
+```
+
+================================================================================
+11. VARIABLES D'ENVIRONNEMENT
+================================================================================
+
+Créer le fichier: .env.local
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Stripe Configuration (optionnel)
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-key
+
+# Application Configuration
+VITE_APP_NAME=KPrague - Simulation de Coûts d'Importation
+VITE_APP_VERSION=1.0.0
+VITE_APP_ENVIRONMENT=development
+
+# API Configuration
+VITE_API_BASE_URL=https://your-api-url.com
+VITE_API_TIMEOUT=30000
+
+# Feature Flags
+VITE_ENABLE_ANALYTICS=false
+VITE_ENABLE_DEBUG_MODE=true
+```
+
+Créer le fichier: .env.production
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Stripe Configuration
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_your-stripe-key
+
+# Application Configuration
+VITE_APP_NAME=KPrague - Simulation de Coûts d'Importation
+VITE_APP_VERSION=1.0.0
+VITE_APP_ENVIRONMENT=production
+
+# API Configuration
+VITE_API_BASE_URL=https://your-api-url.com
+VITE_API_TIMEOUT=30000
+
+# Feature Flags
+VITE_ENABLE_ANALYTICS=true
+VITE_ENABLE_DEBUG_MODE=false
+```
+
+================================================================================
+12. INTÉGRATION CLIENT SUPABASE
+================================================================================
+
+🔄 MISE À JOUR DU MAIN.TSX
+============================
+
+```typescript
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+import { AuthProvider } from './contexts/AuthContext'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </React.StrictMode>,
+)
+```
+
+🔐 COMPOSANT DE PROTECTION DES ROUTES
+=====================================
+
+Créer le fichier: src/components/ProtectedRoute.tsx
+
+```typescript
+import React from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { Navigate } from 'react-router-dom'
+
+interface ProtectedRouteProps {
+  children: React.ReactNode
+  requiredPlan?: 'free' | 'bronze' | 'silver' | 'gold' | 'diamond'
+}
+
+export function ProtectedRoute({ children, requiredPlan }: ProtectedRouteProps) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Vérification du plan si requis
+  if (requiredPlan && user.user_metadata?.plan_type) {
+    const planHierarchy = {
+      free: 0,
+      bronze: 1,
+      silver: 2,
+      gold: 3,
+      diamond: 4,
+    }
+
+    const userPlanLevel = planHierarchy[user.user_metadata.plan_type] || 0
+    const requiredPlanLevel = planHierarchy[requiredPlan] || 0
+
+    if (userPlanLevel < requiredPlanLevel) {
+      return <Navigate to="/upgrade" replace />
+    }
+  }
+
+  return <>{children}</>
+}
+```
+
+📝 FORMULAIRES D'AUTHENTIFICATION
+==================================
+
+Créer le fichier: src/components/auth/LoginForm.tsx
+
+```typescript
+import React, { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
+export function LoginForm() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
+  const { signIn } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      await signIn(email, password)
+      navigate('/dashboard')
+    } catch (error: any) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+      
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          Mot de passe
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+      >
+        {loading ? 'Connexion...' : 'Se connecter'}
+      </button>
+    </form>
+  )
+}
+```
+
+Créer le fichier: src/components/auth/RegisterForm.tsx
+
+```typescript
+import React, { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
+export function RegisterForm() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas')
+      setLoading(false)
+      return
+    }
+
+    try {
+      await signUp(email, password, name)
+      navigate('/dashboard')
+    } catch (error: any) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+      
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          Nom complet
+        </label>
+        <input
+          id="name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          Mot de passe
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+          Confirmer le mot de passe
+        </label>
+        <input
+          id="confirmPassword"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+      >
+        {loading ? 'Inscription...' : 'S\'inscrire'}
+      </button>
+    </form>
+  )
+}
+```
+
+================================================================================
+13. NOTES IMPORTANTES
+================================================================================
+
+⚠️ SÉCURITÉ
+- Toutes les tables ont RLS activé
+- Les politiques garantissent que les utilisateurs ne voient que leurs données
+- Les tables de référence sont en lecture seule pour tous les utilisateurs
+
+📊 PERFORMANCE
+- Index créés sur les colonnes fréquemment utilisées
+- Index GIN pour les recherches textuelles
+- Index composites pour les requêtes complexes
+
+🔄 MAINTENANCE
+- Triggers automatiques pour updated_at
+- Fonction de déduction automatique des crédits
+- Logs de simulation pour audit
+
+💰 MONÉTISATION
+- Système de crédits intégré
+- Historique complet des paiements
+- Support Stripe pour les paiements
+
+📈 ÉVOLUTIVITÉ
+- Structure modulaire
+- Support JSONB pour les données flexibles
+- Possibilité d'ajouter de nouvelles tables facilement
+
+🔧 CONFIGURATION SUPABASE
+- URL du projet: https://your-project-id.supabase.co
+- Clé anonyme: your-anon-key-here
+- Clé de service: your-service-role-key (pour les opérations admin)
+
+🚀 DÉPLOIEMENT
+- Variables d'environnement configurées
+- Client Supabase initialisé
+- Contextes d'authentification en place
+- Hooks pour la gestion des données
+
+📱 FONCTIONNALITÉS
+- Authentification complète (inscription/connexion)
+- Gestion des sessions
+- Protection des routes
+- Gestion des crédits
+- Simulations persistantes
+- Données de référence
+
+================================================================================
+FIN DU SCHÉMA
+================================================================================
+
+Ce schéma couvre tous les aspects de votre application SaaS de simulation
+de coûts d'importation, de l'inscription des utilisateurs jusqu'au paiement
+et à la gestion des simulations.
+
+Pour toute question ou modification, consultez la documentation Supabase :
+https://supabase.com/docs 
