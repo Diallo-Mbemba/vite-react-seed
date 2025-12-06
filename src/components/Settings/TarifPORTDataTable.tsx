@@ -15,9 +15,12 @@ const TarifPORTDataTable: React.FC = () => {
   const [filterColumn, setFilterColumn] = useState('all');
 
   useEffect(() => {
-    const data = getAllTarifPORTArticles();
-    setProducts(data);
-    setFilteredProducts(data);
+    const loadData = async () => {
+      const data = await getAllTarifPORTArticles();
+      setProducts(data);
+      setFilteredProducts(data);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {

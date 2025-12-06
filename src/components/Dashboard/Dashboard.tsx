@@ -11,7 +11,7 @@ import CreditPoolsDisplay from './CreditPoolsDisplay';
 
 const Dashboard: React.FC = () => {
   const { user, refreshUser } = useAuth();
-  const { getSimulationsByUser, updateSimulation, simulations } = useSimulation();
+  const { getSimulationsByUser, updateSimulation } = useSimulation();
   const navigate = useNavigate();
   const [selectedResult, setSelectedResult] = useState<any>(null);
   const [showResultModal, setShowResultModal] = useState(false);

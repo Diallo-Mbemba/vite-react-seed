@@ -79,7 +79,7 @@ const AdminOrCashierGuard: React.FC<{ children: React.ReactNode }> = ({ children
 
 const MainApp: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [_currentPage, _setCurrentPage] = useState('dashboard');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
