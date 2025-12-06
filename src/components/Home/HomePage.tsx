@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { Calculator, TrendingUp, Shield, Zap, CheckCircle, ArrowRight, Globe, Users, BarChart3, Clock, Ship, Plane, Train, Truck } from 'lucide-react';
+import React from 'react';
+import { Calculator, TrendingUp, Shield, Zap, ArrowRight, Globe, Ship, Plane, Train, Truck } from 'lucide-react';
 import { plans } from '../../data/plans';
 import PlanCard from '../Plans/PlanCard';
 import logoOic from '../../logo-oic.jpg';
