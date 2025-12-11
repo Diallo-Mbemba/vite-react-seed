@@ -1,6 +1,6 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { authService, UserProfile } from '../services/supabase/authService';
 import { creditService } from '../services/supabase/creditService';
 import { cleanupOnLogin } from '../utils/localStorageCleanup';

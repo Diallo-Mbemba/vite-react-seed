@@ -14,7 +14,7 @@
     "@stripe/react-stripe-js": "^4.0.2",
     "@stripe/stripe-js": "^7.9.0",
     "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.56.0",
+    "@supabase/supabase-js": "^2.87.1",
     "chart.js": "^4.4.0",
     "chartjs-adapter-date-fns": "^3.0.0",
     "jspdf": "^2.5.1",

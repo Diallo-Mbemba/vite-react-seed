@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminDecisionCriteria {
   id: string;
