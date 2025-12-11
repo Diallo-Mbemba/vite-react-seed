@@ -44,26 +44,21 @@ const AdminDecisionsSettings: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [loadingCriteria, setLoadingCriteria] = useState(true);
 
   // Charger les critères sauvegardés depuis Supabase
   useEffect(() => {
     const loadCriteria = async () => {
       if (!user) {
-        setLoadingCriteria(false);
         return;
       }
 
       try {
-        setLoadingCriteria(true);
         const savedCriteria = await adminDecisionService.getCriteria(user.id);
         if (savedCriteria && savedCriteria.criteriaData) {
           setCriteria(savedCriteria.criteriaData);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des critères:', error);
-      } finally {
-        setLoadingCriteria(false);
       }
     };
 

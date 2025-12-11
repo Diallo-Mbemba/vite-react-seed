@@ -5,7 +5,7 @@ import { hasValidCredits } from '../../utils/paymentUtils';
 import { Calculator, TrendingUp, Calendar, CreditCard, Play, Trash2, Eye, X, Search, ArrowUpDown, ChevronUp, ChevronDown, Package, Clock, CheckCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CostResultModal from '../Simulator/CostResultModal';
-import { getUserOrders, formatCurrency, getStatusColor, getStatusText } from '../../utils/orderUtils';
+import { getUserOrders, formatCurrency as formatOrderCurrency, getStatusColor, getStatusText } from '../../utils/orderUtils';
 import { Order } from '../../types/order';
 import CreditPoolsDisplay from './CreditPoolsDisplay';
 
@@ -341,7 +341,7 @@ const Dashboard: React.FC = () => {
                         <span className="font-medium">{order.planName}</span> - {order.planCredits} crédits
                       </div>
                       <div className="text-sm text-gray-500">
-                        {formatCurrency(order.amount, order.currency)} • {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                        {formatOrderCurrency(order.amount, order.currency)} • {new Date(order.createdAt).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -379,7 +379,7 @@ const Dashboard: React.FC = () => {
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 mb-1">{order.planName}</div>
-                  <div className="text-sm text-gray-500">{formatCurrency(order.amount, order.currency)}</div>
+                  <div className="text-sm text-gray-500">{formatOrderCurrency(order.amount, order.currency)}</div>
                 </div>
               ))}
             </div>

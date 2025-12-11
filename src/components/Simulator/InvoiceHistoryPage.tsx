@@ -6,7 +6,6 @@ import {
   Trash2, 
   Eye, 
   Search, 
-  Filter, 
   ChevronDown, 
   ChevronUp, 
   AlertTriangle,
@@ -21,16 +20,18 @@ import CostResultModal from './CostResultModal';
 import { generatePDFReport, generateGroupedByCodeSHPDF, generateSyntheseMinutePDF } from '../../utils/pdfGenerator';
 import { downloadReport } from '../../utils/reportGenerator';
 
-interface GroupedInvoices {
+// Interface pour les factures groupées (utilisée pour le typage interne)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type GroupedInvoicesType = {
   date: string;
   invoices: any[];
   totalAmount: number;
   count: number;
-}
+};
 
 const InvoiceHistoryPage: React.FC = () => {
   const { user } = useAuth();
-  const { getSimulationsByUser, updateSimulation, deleteSimulation } = useSimulation();
+  const { getSimulationsByUser, deleteSimulation } = useSimulation();
   const navigate = useNavigate();
   
   // États locaux

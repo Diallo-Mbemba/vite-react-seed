@@ -1,9 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { X, Download, Printer, TrendingUp, Package, Calculator, AlertCircle, CheckCircle, Shield, CreditCard, ArrowRight, ArrowLeft, Target, Clock, ChevronRight, AlertTriangle, BarChart3, FileText, Users, Settings, DollarSign, Lightbulb, Filter, Gavel, Info, Calendar, Globe, Zap, Search, Bot } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Download, Printer, TrendingUp, Package, Calculator, AlertCircle, CheckCircle, Shield, CreditCard, ArrowRight, Target, Clock, AlertTriangle, BarChart3, FileText, Users, Settings, DollarSign, Lightbulb, Gavel, Info, Calendar, Globe, Zap, Search, Bot } from 'lucide-react';
 import { generatePDFReport } from '../../utils/pdfGenerator';
 import { downloadReport } from '../../utils/reportGenerator';
-import { getActorById } from '../../data/actors';
-import { findTECArticleByCode } from '../../data/tec';
+import { generateAdminDecisions } from '../../utils/adminDecisions';
+import AIAdvisorService from '../../utils/aiAdvisorService';
 import { generateAdminDecisions } from '../../utils/adminDecisions';
 import AIAdvisorService from '../../utils/aiAdvisorService';
 import ChatbotInterface from './ChatbotInterface';
@@ -1619,7 +1619,7 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
               <span>Rapport Complet</span>
             </button>
             <button
-              onClick={() => generatePDFReport(result)}
+              onClick={() => generatePDFReport(result, null)}
               className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 transition-colors rounded-lg"
             >
               <Download className="h-4 w-4" />

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CreditCard, 
-  Receipt, 
-  User, 
   DollarSign, 
   CheckCircle, 
-  AlertCircle,
   Printer,
   Search,
-  Clock,
   Users,
   Package,
-  Eye,
   XCircle,
   FileText,
   Calendar,
