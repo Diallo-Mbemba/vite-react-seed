@@ -4,9 +4,8 @@ import { generatePDFReport } from '../../utils/pdfGenerator';
 import { downloadReport } from '../../utils/reportGenerator';
 import { generateAdminDecisions } from '../../utils/adminDecisions';
 import AIAdvisorService from '../../utils/aiAdvisorService';
-import { generateAdminDecisions } from '../../utils/adminDecisions';
-import AIAdvisorService from '../../utils/aiAdvisorService';
 import ChatbotInterface from './ChatbotInterface';
+import { Filter } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface CostResultModalProps {
@@ -1067,13 +1066,13 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
             importateur: result.selectedActors?.importateur,
             fournisseur: result.selectedActors?.fournisseur,
             transitaire: result.selectedActors?.transitaire,
-            paysFournisseur: result.actors?.find(a => a?.id === result.selectedActors?.fournisseur)?.country,
+            paysFournisseur: result.actors?.find((a: any) => a?.id === result.selectedActors?.fournisseur)?.country,
             modeTransport: result.transport?.mode,
             route: result.transport?.route,
             typeConteneur: result.transport?.typeConteneur,
             nombreConteneurs: result.transport?.nombreConteneurs,
             poidsTotal: parseFloat(result.transport?.poidsTotalTonnes || '0') * 1000,
-            articles: result.items?.map(item => ({
+            articles: result.items?.map((item: any) => ({
               codeHS: item.codeHS,
               designation: item.designation,
               quantite: item.quantite,
@@ -1101,7 +1100,7 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
             rpi: result.rpi,
             coc: result.coc,
             fraisFinanciers: result.fraisFinanciers,
-            transitaire: result.prestationTransitaire,
+            transitaireService: result.prestationTransitaire,
             bsc: result.bsc,
             tsDouane: result.tsDouane,
             fraisImprevus: result.fraisImprevus,
@@ -1143,8 +1142,8 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
     }
 
     if (!aiAdvice) {
-      // Utiliser la méthode classique en fallback immédiat
-      const fallbackAdvice = AIAdvisorService.generateAdvice(result);
+      // Utiliser la méthode classique en fallback immédiat (valeur non utilisée)
+      void AIAdvisorService.generateAdvice(result);
       return (
         <div className="space-y-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1438,13 +1437,13 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
     }
 
     // Grouper les décisions par catégorie
-    const decisionsByCategory = adminDecisions.reduce((acc, decision) => {
+    const decisionsByCategory = adminDecisions.reduce((acc: { [key: string]: any[] }, decision: any) => {
       if (!acc[decision.category]) {
         acc[decision.category] = [];
       }
       acc[decision.category].push(decision);
       return acc;
-    }, {} as { [key: string]: typeof adminDecisions });
+    }, {} as { [key: string]: any[] });
 
     const getTypeColor = (type: string) => {
       switch (type) {
@@ -1538,7 +1537,7 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
               </p>
             </div>
           ) : (
-            Object.entries(decisionsByCategory).map(([category, decisions]) => (
+            Object.entries(decisionsByCategory).map(([category, decisions]: [string, any[]]) => (
             <div key={category} className="bg-white rounded-lg border border-gray-200">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h4 className="text-lg font-semibold text-gray-900">{category}</h4>
@@ -1546,7 +1545,7 @@ const CostResultModal: React.FC<CostResultModalProps> = ({ result, onClose }) =>
               </div>
               
               <div className="p-6 space-y-4">
-                {decisions.map((decision, index) => (
+                {decisions.map((decision: any, index: number) => (
                   <div
                     key={index}
                     className={`p-4 rounded-lg border ${getTypeColor(decision.type)}`}

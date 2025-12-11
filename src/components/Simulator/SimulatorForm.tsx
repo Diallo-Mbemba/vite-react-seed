@@ -2,13 +2,13 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useSimulation } from '../../contexts/SimulationContext';
 import { hasValidCredits } from '../../utils/paymentUtils';
-import { Calculator, Upload, Settings, Users, FileText, Package, AlertCircle, CheckCircle, X, Shield, CreditCard, ArrowRight, ArrowLeft, Clock, TrendingUp, AlertTriangle, Info } from 'lucide-react';
+import { Calculator, Upload, Settings, Users, FileText, Package, AlertCircle, CheckCircle, X, Shield, CreditCard, ArrowRight, ArrowLeft, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
 import { getActorsByType, ActorData, addActor } from '../../data/actors';
 import { CURRENCIES, getCurrencyByCode } from '../../data/currencies';
 import { INCOTERMS } from '../../data/incoterms';
-import { findTECArticleByCode, searchTECArticlesByCode, searchTECArticlesByDesignation } from '../../data/tec';
+import { findTECArticleByCodeSync as findTECArticleByCode, searchTECArticlesByCodeSync as searchTECArticlesByCode, searchTECArticlesByDesignationSync as searchTECArticlesByDesignation } from '../../data/tec';
 import { findVOCProductByCode } from '../../data/voc';
-import { getAllTarifPORTArticles } from '../../data/tarifport';
+import { getAllTarifPORTArticlesSync as getAllTarifPORTArticles } from '../../data/tarifport';
 import { TarifPORTProduct } from '../../types/tarifport';
 import AddActorModal from './AddActorModal';
 import CostResultModal from './CostResultModal';
@@ -415,7 +415,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [editingCodeHS, setEditingCodeHS] = useState<string>('');
+  const [_editingCodeHS, setEditingCodeHS] = useState<string>('');
   
   // Ã‰tats pour les modals de confirmation
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);

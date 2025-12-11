@@ -1,6 +1,6 @@
 ﻿import { TECArticle } from '../types/tec';
 
-export const loadSampleTECData = (): number => {
+export const loadSampleTECData = (): TECArticle[] => {
   const sampleData: TECArticle[] = [
     {
       sh10Code: "0101.11.00",
@@ -265,5 +265,5 @@ export const loadSampleTECData = (): number => {
   ];
 
   localStorage.setItem('tecArticles', JSON.stringify(sampleData));
-  return sampleData.length;
+  return sampleData;
 }; 

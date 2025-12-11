@@ -62,7 +62,7 @@ const OICCashierPage: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportStartDate, setReportStartDate] = useState('');
   const [reportEndDate, setReportEndDate] = useState('');
-  const [reportType, setReportType] = useState<'day' | 'period'>('day');
+  const [_reportType, _setReportType] = useState<'day' | 'period'>('day');
 
   useEffect(() => {
     // Vérifier s'il y a une session active
