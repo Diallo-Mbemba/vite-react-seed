@@ -20,7 +20,7 @@ import * as XLSX from 'xlsx';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../../contexts/SettingsContext';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { invoiceHistoryService } from '../../services/supabase/invoiceHistoryService';
 
 // Composant InfoTooltip pour les infobulles
