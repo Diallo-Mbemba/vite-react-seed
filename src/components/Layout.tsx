@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
-import { Calculator, LogOut, User, CreditCard, Users, Database, FileText, Receipt, CheckCircle, Shield } from 'lucide-react';
+import { Calculator, LogOut, User, CreditCard, Database, FileText, Receipt, CheckCircle, Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 interface LayoutProps {
@@ -13,7 +13,7 @@ interface LayoutProps {
 const Layout: React.FC<Pick<LayoutProps, 'children'>> = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { isAdmin, isCashier, loading: roleLoading } = useAdmin();
+  const { isAdmin, isCashier } = useAdmin();
   
   // Les menus admin/caissier sont visibles uniquement pour les admins et caissiers
   // Ne pas masquer les menus pendant le chargement pour éviter qu'ils disparaissent

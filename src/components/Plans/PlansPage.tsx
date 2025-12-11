@@ -6,7 +6,7 @@ import PlanCard from './PlanCard';
 import PaymentModal from './PaymentModal';
 import CreditInfo from './CreditInfo';
 import PaymentMethodInfo from './PaymentMethodInfo';
-import { canUserBuyCredits, getCreditPurchaseMessage } from '../../utils/paymentUtils';
+import { canUserBuyCredits } from '../../utils/paymentUtils';
 
 const PlansPage: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);

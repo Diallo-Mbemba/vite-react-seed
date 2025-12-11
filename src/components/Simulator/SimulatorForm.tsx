@@ -2,13 +2,13 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useSimulation } from '../../contexts/SimulationContext';
 import { hasValidCredits } from '../../utils/paymentUtils';
-import { Calculator, Upload, Download, Settings, Users, FileText, Package, AlertCircle, CheckCircle, X, Shield, CreditCard, ArrowRight, ArrowLeft, Target, Clock, TrendingUp, ChevronRight, AlertTriangle, Info } from 'lucide-react';
+import { Calculator, Upload, Settings, Users, FileText, Package, AlertCircle, CheckCircle, X, Shield, CreditCard, ArrowRight, ArrowLeft, Clock, TrendingUp, AlertTriangle, Info } from 'lucide-react';
 import { getActorsByType, ActorData, addActor } from '../../data/actors';
-import { CURRENCIES, getCurrencyByCode, getExchangeRate } from '../../data/currencies';
-import { INCOTERMS, getIncotermByCode } from '../../data/incoterms';
-import { findTECArticleByCode, searchTECArticlesByCode, searchTECArticlesByDesignation, getTECTariffs } from '../../data/tec';
+import { CURRENCIES, getCurrencyByCode } from '../../data/currencies';
+import { INCOTERMS } from '../../data/incoterms';
+import { findTECArticleByCode, searchTECArticlesByCode, searchTECArticlesByDesignation } from '../../data/tec';
 import { findVOCProductByCode } from '../../data/voc';
-import { getAllTarifPORTArticles, findTarifPORTArticleByLibelle } from '../../data/tarifport';
+import { getAllTarifPORTArticles } from '../../data/tarifport';
 import { TarifPORTProduct } from '../../types/tarifport';
 import AddActorModal from './AddActorModal';
 import CostResultModal from './CostResultModal';
@@ -20,25 +20,8 @@ import * as XLSX from 'xlsx';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../../contexts/SettingsContext';
-import { supabase } from '@/integrations/supabase/client';
-import { invoiceHistoryService } from '../../services/supabase/invoiceHistoryService';
 
-// Composant InfoTooltip pour les infobulles
-const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
-  <span className="group relative inline-flex items-center cursor-help ml-2 align-middle">
-    <span
-      tabIndex={0}
-      aria-label="Aide"
-      className="p-1.5 rounded-full bg-gray-300/80 border border-gray-400 text-gray-600 group-hover:text-cote-ivoire-primary group-hover:border-cote-ivoire-primary focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-    >
-      <Info className="h-4 w-4" />
-    </span>
-    <span className="pointer-events-none absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 w-96 max-w-[28rem] bg-white text-gray-800 text-sm leading-relaxed p-4 rounded-xl border border-gray-200 shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150">
-      {text}
-      <span className="absolute top-full left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white border-l border-b border-gray-200 rotate-45"></span>
-    </span>
-  </span>
-);
+import { invoiceHistoryService } from '../../services/supabase/invoiceHistoryService';
 
 // Composant modal Détaillé pour les formules de calcul
 const DetailedCalculationModal: React.FC<{ 
@@ -526,6 +509,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
             rcp: parseFloat(formData.rcp) || 0,
             tsDouane: parseFloat(formData.tsDouane) || 0,
             avanceFonds: parseFloat(formData.avanceFonds) || 0,
+            tva: parseFloat(formData.tva) || 0,
             totalCost: 0,
             currency: 'XAF',
             status: 'in_progress' as const,

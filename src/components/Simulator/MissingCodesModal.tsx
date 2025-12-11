@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
-import { AlertTriangle, XCircle, FileText, Search, Info, Edit, Check, X } from 'lucide-react';
-import { findTECArticleByCode, searchTECArticlesByCode, searchTECArticlesByDesignation, getTECTariffs } from '../../data/tec';
+import React, { useState } from 'react';
+import { AlertTriangle, XCircle, Search, Info, Edit, Check, X } from 'lucide-react';
+import { searchTECArticlesByCode, searchTECArticlesByDesignation, getTECTariffs } from '../../data/tec';
+import { TECArticle } from '../../types/tec';
 
 interface MissingCodesModalProps {
   isOpen: boolean;
@@ -42,12 +43,12 @@ const MissingCodesModal: React.FC<MissingCodesModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim().length >= 2) {
-      const codeResults = searchTECArticlesByCode(query);
-      const designationResults = searchTECArticlesByDesignation(query);
-      const combinedResults = [...codeResults, ...designationResults];
+      const codeResults = await searchTECArticlesByCode(query);
+      const designationResults = await searchTECArticlesByDesignation(query);
+      const combinedResults: TECArticle[] = [...codeResults, ...designationResults];
       // Supprimer les doublons basés sur sh10Code
       const uniqueResults = combinedResults.filter((item, index, self) => 
         index === self.findIndex(t => t.sh10Code === item.sh10Code)
@@ -58,9 +59,9 @@ const MissingCodesModal: React.FC<MissingCodesModalProps> = ({
     }
   };
 
-  const handleCodeCorrection = (originalCode: string, newCode: string, designation: string) => {
+  const handleCodeCorrection = async (originalCode: string, newCode: string, designation: string) => {
     // Récupérer les tarifs douaniers pour le nouveau code
-    const tariffs = getTECTariffs(newCode);
+    const tariffs = await getTECTariffs(newCode);
     
     // Ajouter à l'historique des corrections
     const correction = {

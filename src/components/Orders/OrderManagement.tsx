@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
-  Eye, 
   CheckCircle, 
   XCircle, 
   Clock,
-  User,
-  CreditCard,
-  Calendar,
   DollarSign,
   RefreshCw
 } from 'lucide-react';

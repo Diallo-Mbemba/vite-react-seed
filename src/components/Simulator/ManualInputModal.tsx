@@ -116,7 +116,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
   };
 
   const getTotalEstimated = () => {
-    return Object.entries(values).reduce((sum, [key, value]) => {
+    return Object.entries(values).reduce((sum, [, value]) => {
       const numValue = Number(value) || 0;
       return sum + numValue;
     }, 0);

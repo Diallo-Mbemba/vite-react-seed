@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,8 +6,7 @@ import {
   CreditCard, 
   AlertCircle, 
   CheckCircle, 
-  ArrowRight,
-  X
+  ArrowRight
 } from 'lucide-react';
 
 interface PaymentGuardProps {
@@ -21,7 +20,6 @@ const PaymentGuard: React.FC<PaymentGuardProps> = ({
 }) => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Vérifier si l'utilisateur est authentifié
   if (!isAuthenticated || !user) {

@@ -19,7 +19,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ plan, onClose, onSuccess })
   const [showStripeModal, setShowStripeModal] = useState(false);
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
-  const { updateUser, user } = useAuth();
+  const { user } = useAuth();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {

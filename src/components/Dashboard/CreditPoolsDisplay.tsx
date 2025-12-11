@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditPool, CreditUsage } from '../../types';
+import { CreditPool } from '../../types';
 import { getUserCreditPools, getCreditUsageHistory } from '../../services/creditFIFOService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Wallet, TrendingUp, Package, ShoppingCart, ArrowRight } from 'lucide-react';
@@ -11,12 +11,10 @@ interface CreditPoolsDisplayProps {
 const CreditPoolsDisplay: React.FC<CreditPoolsDisplayProps> = ({ className = '' }) => {
   const { user } = useAuth();
   const [creditPools, setCreditPools] = useState<CreditPool[]>([]);
-  const [creditUsage, setCreditUsage] = useState<CreditUsage[]>([]);
 
   useEffect(() => {
     if (!user) {
       setCreditPools([]);
-      setCreditUsage([]);
       return;
     }
 
@@ -25,17 +23,15 @@ const CreditPoolsDisplay: React.FC<CreditPoolsDisplayProps> = ({ className = '' 
     const fetchCredits = async () => {
       try {
         const pools = await getUserCreditPools(user.id);
-        const usage = await getCreditUsageHistory(user.id);
+        await getCreditUsageHistory(user.id); // Load but don't store if not needed
 
         if (!isMounted) return;
 
         setCreditPools(Array.isArray(pools) ? pools : []);
-        setCreditUsage(Array.isArray(usage) ? usage : []);
       } catch (error) {
         console.error('Erreur lors du chargement des pools de crédits:', error);
         if (!isMounted) return;
         setCreditPools([]);
-        setCreditUsage([]);
       }
     };
 

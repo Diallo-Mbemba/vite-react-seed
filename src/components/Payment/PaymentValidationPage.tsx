@@ -3,14 +3,10 @@ import {
   CheckCircle, 
   XCircle, 
   Clock, 
-  User, 
-  DollarSign, 
   Receipt,
   Search,
-  Filter,
   Eye,
   Check,
-  X,
   Package,
   Shield,
   FileText,
@@ -19,10 +15,8 @@ import {
   Printer
 } from 'lucide-react';
 import { 
-  getPendingPayments, 
   getAllPayments, 
-  validatePayment,
-  getUserInscriptionNumber
+  validatePayment
 } from '../../utils/paymentUtils';
 import { 
   generateDailySalesReport, 
@@ -36,7 +30,7 @@ import {
   filterOrders as filterOrdersUtil, 
   updateOrderStatus, 
   getOrderStats,
-  formatCurrency,
+  formatCurrency as formatOrderCurrency,
   getStatusColor,
   getStatusText,
   canAuthorizeOrder
