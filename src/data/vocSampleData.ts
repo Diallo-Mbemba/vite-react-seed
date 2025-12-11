@@ -65,7 +65,7 @@ export const sampleVOCData: VOCProduct[] = [
 ];
 
 // Fonction pour charger les données d'exemple dans le localStorage
-export const loadSampleVOCData = () => {
+export const loadSampleVOCData = (): VOCProduct[] => {
   localStorage.setItem('vocProducts', JSON.stringify(sampleVOCData));
-  return sampleVOCData.length;
-}; 
+  return sampleVOCData;
+};

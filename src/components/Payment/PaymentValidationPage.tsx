@@ -30,7 +30,6 @@ import {
   filterOrders as filterOrdersUtil, 
   updateOrderStatus, 
   getOrderStats,
-  formatCurrency as formatOrderCurrency,
   getStatusColor,
   getStatusText,
   canAuthorizeOrder
@@ -76,7 +75,7 @@ const PaymentValidationPage: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportStartDate, setReportStartDate] = useState('');
   const [reportEndDate, setReportEndDate] = useState('');
-  const [reportType, setReportType] = useState<'day' | 'period'>('day');
+  const [_reportType, _setReportType] = useState<'day' | 'period'>('day');
 
   useEffect(() => {
     loadPayments();
@@ -534,7 +533,7 @@ const PaymentValidationPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(order.amount, order.currency)}
+                        {formatCurrency(order.amount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
@@ -783,7 +782,7 @@ const PaymentValidationPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Montant</label>
-                    <p className="text-lg font-bold">{formatCurrency(selectedOrder.amount, selectedOrder.currency)}</p>
+                    <p className="text-lg font-bold">{formatCurrency(selectedOrder.amount)}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Date de création</label>

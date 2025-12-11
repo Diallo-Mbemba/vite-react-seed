@@ -179,4 +179,73 @@ export const saveTECArticles = (articles: TECArticle[]): void => {
   } catch (error) {
     console.error('Erreur lors de la sauvegarde des articles TEC:', error);
   }
-}; 
+};
+
+// VERSIONS SYNCHRONES - utilisent le cache localStorage pour éviter les appels async
+// Ces fonctions sont utilisées par SimulatorForm.tsx qui ne peut pas utiliser await
+
+// Version synchrone de findTECArticleByCode - utilise localStorage directement
+export const findTECArticleByCodeSync = (code: string): TECArticle | null => {
+  try {
+    const savedArticles = localStorage.getItem('tecArticles');
+    if (!savedArticles) return null;
+    
+    const articles: TECArticle[] = JSON.parse(savedArticles);
+    
+    if (typeof code !== 'string') return null;
+    
+    const normalizedCode = code.replace(/[.\s]/g, '');
+    
+    const foundArticle = articles.find(article => {
+      const normalizedSh10Code = article.sh10Code.replace(/[.\s]/g, '');
+      const normalizedSh6Code = article.sh6Code.replace(/[.\s]/g, '');
+      
+      return normalizedSh10Code === normalizedCode || 
+             normalizedSh6Code === normalizedCode ||
+             article.sh10Code === code || 
+             article.sh6Code === code;
+    });
+    
+    return foundArticle || null;
+  } catch (error) {
+    console.error('Erreur lors de la recherche TEC synchrone:', error);
+    return null;
+  }
+};
+
+// Version synchrone de searchTECArticlesByCode
+export const searchTECArticlesByCodeSync = (query: string): TECArticle[] => {
+  try {
+    const savedArticles = localStorage.getItem('tecArticles');
+    if (!savedArticles) return [];
+    
+    const articles: TECArticle[] = JSON.parse(savedArticles);
+    const lowerQuery = query.toLowerCase();
+    
+    return articles.filter(article => 
+      article.sh10Code.toLowerCase().includes(lowerQuery) ||
+      article.sh6Code.toLowerCase().includes(lowerQuery)
+    );
+  } catch (error) {
+    console.error('Erreur lors de la recherche TEC synchrone:', error);
+    return [];
+  }
+};
+
+// Version synchrone de searchTECArticlesByDesignation
+export const searchTECArticlesByDesignationSync = (query: string): TECArticle[] => {
+  try {
+    const savedArticles = localStorage.getItem('tecArticles');
+    if (!savedArticles) return [];
+    
+    const articles: TECArticle[] = JSON.parse(savedArticles);
+    const lowerQuery = query.toLowerCase();
+    
+    return articles.filter(article => 
+      article.designation.toLowerCase().includes(lowerQuery)
+    );
+  } catch (error) {
+    console.error('Erreur lors de la recherche TEC synchrone:', error);
+    return [];
+  }
+};

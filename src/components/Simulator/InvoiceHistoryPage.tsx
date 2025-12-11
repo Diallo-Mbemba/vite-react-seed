@@ -20,14 +20,7 @@ import CostResultModal from './CostResultModal';
 import { generatePDFReport, generateGroupedByCodeSHPDF, generateSyntheseMinutePDF } from '../../utils/pdfGenerator';
 import { downloadReport } from '../../utils/reportGenerator';
 
-// Interface pour les factures groupées (utilisée pour le typage interne)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type GroupedInvoicesType = {
-  date: string;
-  invoices: any[];
-  totalAmount: number;
-  count: number;
-};
+// Interface pour les factures groupées (utilisée pour le typage interne, supprimée car non utilisée)
 
 const InvoiceHistoryPage: React.FC = () => {
   const { user } = useAuth();

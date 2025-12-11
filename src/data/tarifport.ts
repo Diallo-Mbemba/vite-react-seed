@@ -91,4 +91,20 @@ export const saveTarifPORTProducts = (products: TarifPORTProduct[]): void => {
   } catch (error) {
     console.error('Erreur lors de la sauvegarde des produits TarifPORT:', error);
   }
-}; 
+};
+
+// VERSION SYNCHRONE - utilise le cache localStorage pour éviter les appels async
+// Cette fonction est utilisée par SimulatorForm.tsx qui ne peut pas utiliser await
+export const getAllTarifPORTArticlesSync = (): TarifPORTProduct[] => {
+  try {
+    const storedData = localStorage.getItem('tarifportProducts');
+    if (storedData) {
+      return JSON.parse(storedData);
+    }
+    // Fallback vers les données d'exemple
+    return loadSampleTarifPORTData();
+  } catch (error) {
+    console.error('Erreur lors de la récupération TarifPORT synchrone:', error);
+    return [];
+  }
+};
