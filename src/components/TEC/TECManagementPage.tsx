@@ -15,7 +15,7 @@ const TECManagementPage: React.FC = () => {
   const [searchDesignation, setSearchDesignation] = useState('');
   const [filteredArticles, setFilteredArticles] = useState<TECArticle[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   // Charger les articles depuis Supabase au démarrage
   useEffect(() => {
@@ -350,13 +350,14 @@ const TECManagementPage: React.FC = () => {
           return;
         }
 
-        try {
-          await referenceDataService.saveReferenceData('tec', parsedArticles, user?.id);
-          console.log('TEC Management - Articles sauvegardés dans Supabase');
-        } catch (error) {
-          console.error('TEC Management - Erreur lors de la sauvegarde:', error);
-          alert('Erreur lors de la sauvegarde. Vérifiez vos droits administrateur.');
-        }
+        referenceDataService.saveReferenceData('tec', parsedArticles, user?.id)
+          .then(() => {
+            console.log('TEC Management - Articles sauvegardés dans Supabase');
+          })
+          .catch((error) => {
+            console.error('TEC Management - Erreur lors de la sauvegarde:', error);
+            alert('Erreur lors de la sauvegarde. Vérifiez vos droits administrateur.');
+          });
         
         // Statistiques d'import
         const stats = {

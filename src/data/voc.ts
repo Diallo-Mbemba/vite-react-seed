@@ -101,4 +101,36 @@ export const saveVOCProducts = (products: VOCProduct[]): void => {
   } catch (error) {
     console.error('Erreur lors de la sauvegarde des produits VOC:', error);
   }
-}; 
+};
+
+// Version synchrone de findVOCProductByCode (utilise le cache localStorage)
+export const findVOCProductByCodeSync = (code: string): VOCProduct | null => {
+  // Si le cache mémoire existe, l'utiliser
+  if (vocProductsCache && vocProductsCache.length > 0) {
+    const normalizedCode = code.replace(/[.\s]/g, '');
+    return vocProductsCache.find(product => {
+      const normalizedProductCode = product.codeSH.replace(/[.\s]/g, '');
+      return normalizedProductCode === normalizedCode || product.codeSH === code;
+    }) || null;
+  }
+
+  // Fallback vers localStorage
+  try {
+    const savedProducts = localStorage.getItem('vocProducts');
+    if (savedProducts) {
+      const products: VOCProduct[] = JSON.parse(savedProducts);
+      vocProductsCache = products;
+      vocProductsCacheTime = Date.now();
+      
+      const normalizedCode = code.replace(/[.\s]/g, '');
+      return products.find(product => {
+        const normalizedProductCode = product.codeSH.replace(/[.\s]/g, '');
+        return normalizedProductCode === normalizedCode || product.codeSH === code;
+      }) || null;
+    }
+  } catch (error) {
+    console.error('Erreur lors de la recherche synchrone VOC:', error);
+  }
+
+  return null;
+};

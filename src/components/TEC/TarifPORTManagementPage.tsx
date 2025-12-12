@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { Upload, Search, Filter, Trash2, Database, FileText, AlertCircle, Download } from 'lucide-react';
+import { Upload, Trash2, Database, FileText, AlertCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { loadSampleTarifPORTData } from '../../data/tarifportSampleData';
 import { TarifPORTProduct } from '../../types/tarifport';
@@ -16,7 +16,7 @@ const TarifPORTManagementPage: React.FC = () => {
   const [searchTP, setSearchTP] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<TarifPORTProduct[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   // Charger les produits depuis Supabase au démarrage
   useEffect(() => {
@@ -131,13 +131,14 @@ const TarifPORTManagementPage: React.FC = () => {
           return;
         }
 
-        try {
-          await referenceDataService.saveReferenceData('tarifport', parsedProducts, user?.id);
-          alert(`${parsedProducts.length} produits TarifPORT ont été importés avec succès !`);
-        } catch (error) {
-          console.error('Erreur lors de la sauvegarde:', error);
-          alert('Erreur lors de la sauvegarde. Vérifiez vos droits administrateur.');
-        }
+        referenceDataService.saveReferenceData('tarifport', parsedProducts, user?.id)
+          .then(() => {
+            alert(`${parsedProducts.length} produits TarifPORT ont été importés avec succès !`);
+          })
+          .catch((error) => {
+            console.error('Erreur lors de la sauvegarde:', error);
+            alert('Erreur lors de la sauvegarde. Vérifiez vos droits administrateur.');
+          });
       };
 
       reader.readAsBinaryString(file);

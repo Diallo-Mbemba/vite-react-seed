@@ -7,7 +7,7 @@ import { getActorsByType, ActorData, addActor } from '../../data/actors';
 import { CURRENCIES, getCurrencyByCode } from '../../data/currencies';
 import { INCOTERMS } from '../../data/incoterms';
 import { findTECArticleByCodeSync as findTECArticleByCode, searchTECArticlesByCodeSync as searchTECArticlesByCode, searchTECArticlesByDesignationSync as searchTECArticlesByDesignation } from '../../data/tec';
-import { findVOCProductByCode } from '../../data/voc';
+import { findVOCProductByCodeSync as findVOCProductByCode } from '../../data/voc';
 import { getAllTarifPORTArticlesSync as getAllTarifPORTArticles } from '../../data/tarifport';
 import { TarifPORTProduct } from '../../types/tarifport';
 import AddActorModal from './AddActorModal';
@@ -1139,7 +1139,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
   };
 
   // Fonction pour sélectionner un code SH
-  const handleSelectCodeHS = (newCode: string, designation: string) => {
+  const handleSelectCodeHS = (newCode: string, _designation: string) => {
     // Mettre Ã  jour l'article en cours d'édition
     setNewArticle(prev => ({
       ...prev,
@@ -1343,7 +1343,8 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
         const userPoidsTotalTonnes = parseFloat(formData.poidsTotalTonnes) || 0;
         
         // Vérifier les incohérences dans les prix totaux des articles
-        const articlesWithDiscrepancies = importedArticles.filter(article => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _articlesWithDiscrepancies = importedArticles.filter(article => {
           if (article.prixTotalImporte) {
             const difference = Math.abs(article.prixTotal - article.prixTotalImporte);
             return difference > 0.01; // Tolérance de 0.01
@@ -1477,7 +1478,8 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
   };
 
   // Vérification des calculs manquants
-  const checkMissingCalculations = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _checkMissingCalculations = () => {
     const missing: Array<{
       key: string;
       label: string;
@@ -1831,6 +1833,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
         fret: parseFloat(formData.fret) || 0,
         assurance: parseFloat(formData.assurance) || 0,
         droitDouane: parseFloat(formData.droitDouane) || 0,
+        tva: parseFloat(formData.tva) || 0,
         fraisFinanciers: parseFloat(formData.fraisFinanciers) || 0,
         prestationTransitaire: parseFloat(formData.prestationTransitaire) || 0,
         rpi: parseFloat(formData.rpi) || 0,
@@ -1905,7 +1908,8 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
             tsDouane: (sim.formData as any).tsDouane || '20000',
             poidsTotalTonnes: (sim.formData as any).poidsTotalTonnes || '',
             avanceFonds: (sim.formData as any).avanceFonds || '',
-            fraisImprevus: (sim.formData as any).fraisImprevus || ''
+            fraisImprevus: (sim.formData as any).fraisImprevus || '',
+            tva: (sim.formData as any).tva || ''
           };
           setFormData(restoredFormData);
         }
@@ -2169,6 +2173,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
           fret: fretValue,
           assurance: assuranceValue,
           droitDouane: droitDouaneValue,
+          tva: 0,
           fraisFinanciers: fraisFinanciersValue,
           prestationTransitaire: prestationTransitaireValue,
           rpi: rpiValue,
@@ -5485,6 +5490,7 @@ const SimulatorForm: React.FC<SimulatorFormProps> = ({ simulationId: propSimulat
                       fret: parseFloat(formData.fret) || 0,
                       assurance: parseFloat(formData.assurance) || 0,
                       droitDouane: parseFloat(formData.droitDouane) || 0,
+                      tva: parseFloat(formData.tva) || 0,
                       fraisFinanciers: parseFloat(formData.fraisFinanciers) || 0,
                       prestationTransitaire: parseFloat(formData.prestationTransitaire) || 0,
                       rpi: parseFloat(formData.rpi) || 0,
