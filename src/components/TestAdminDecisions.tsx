@@ -1,7 +1,10 @@
-import React from 'react';
-import { generateAdminDecisions } from '../utils/adminDecisions';
+import React, { useState, useEffect } from 'react';
+import { generateAdminDecisions, AdminDecision } from '../utils/adminDecisions';
 
 const TestAdminDecisions: React.FC = () => {
+  const [decisions, setDecisions] = useState<AdminDecision[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const testData = {
     licence: 100000,
     fob: 1500000,
@@ -17,7 +20,24 @@ const TestAdminDecisions: React.FC = () => {
     paysFournisseur: 'FR'
   };
 
-  const decisions = generateAdminDecisions(testData);
+  useEffect(() => {
+    const loadDecisions = async () => {
+      setLoading(true);
+      try {
+        const result = await generateAdminDecisions(testData);
+        setDecisions(result);
+      } catch (error) {
+        console.error('Error loading decisions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDecisions();
+  }, []);
+
+  if (loading) {
+    return <div className="p-4">Chargement...</div>;
+  }
 
   return (
     <div className="p-4">
@@ -35,7 +55,7 @@ const TestAdminDecisions: React.FC = () => {
           <p className="text-red-600">Aucune décision générée !</p>
         ) : (
           <div className="space-y-2">
-            {decisions.map((decision, index) => (
+            {decisions.map((decision: AdminDecision, index: number) => (
               <div key={index} className="border p-2 rounded">
                 <div className="font-medium">{decision.icon} {decision.title}</div>
                 <div className="text-sm text-gray-600">{decision.description}</div>
@@ -50,4 +70,3 @@ const TestAdminDecisions: React.FC = () => {
 };
 
 export default TestAdminDecisions;
-

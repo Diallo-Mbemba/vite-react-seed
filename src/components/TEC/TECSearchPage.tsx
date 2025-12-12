@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Search, FileText, Hash, Database, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, FileText, Hash, Database } from 'lucide-react';
 import { TECArticle } from '../../types/tec';
-import { getTECArticles, searchTECArticlesByCode, searchTECArticlesByDesignation } from '../../data/tec';
+import { searchTECArticlesByCodeSync, searchTECArticlesByDesignationSync } from '../../data/tec';
 import TECTooltip from './TECTooltip';
 
 const TECSearchPage: React.FC = () => {
@@ -16,8 +16,15 @@ const TECSearchPage: React.FC = () => {
 
   // Charger le nombre total d'articles au démarrage
   useEffect(() => {
-    const articles = getTECArticles();
-    setTotalArticles(articles.length);
+    const savedArticles = localStorage.getItem('tecArticles');
+    if (savedArticles) {
+      try {
+        const articles = JSON.parse(savedArticles);
+        setTotalArticles(articles.length);
+      } catch {
+        setTotalArticles(0);
+      }
+    }
   }, []);
 
   // Effectuer la recherche quand la requête change
@@ -34,9 +41,9 @@ const TECSearchPage: React.FC = () => {
       let searchResults: TECArticle[] = [];
       
       if (searchType === 'code') {
-        searchResults = searchTECArticlesByCode(searchQuery);
+        searchResults = searchTECArticlesByCodeSync(searchQuery);
       } else {
-        searchResults = searchTECArticlesByDesignation(searchQuery);
+        searchResults = searchTECArticlesByDesignationSync(searchQuery);
       }
       
       setResults(searchResults.slice(0, 100)); // Limiter à 100 résultats

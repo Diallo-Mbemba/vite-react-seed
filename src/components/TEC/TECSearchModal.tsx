@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, X, FileText, Hash } from 'lucide-react';
 import { TECArticle } from '../../types/tec';
-import { getTECArticles, searchTECArticlesByCode, searchTECArticlesByDesignation } from '../../data/tec';
+import { searchTECArticlesByCodeSync, searchTECArticlesByDesignationSync } from '../../data/tec';
 
 interface TECSearchModalProps {
   isOpen: boolean;
@@ -29,9 +29,9 @@ const TECSearchModal: React.FC<TECSearchModalProps> = ({ isOpen, onClose, onSele
       let searchResults: TECArticle[] = [];
       
       if (searchType === 'code') {
-        searchResults = searchTECArticlesByCode(searchQuery);
+        searchResults = searchTECArticlesByCodeSync(searchQuery);
       } else {
-        searchResults = searchTECArticlesByDesignation(searchQuery);
+        searchResults = searchTECArticlesByDesignationSync(searchQuery);
       }
       
       setResults(searchResults.slice(0, 50)); // Limiter à 50 résultats
@@ -192,7 +192,7 @@ const TECSearchModal: React.FC<TECSearchModalProps> = ({ isOpen, onClose, onSele
         <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
-              {getTECArticles().length} articles TEC disponibles
+              Articles TEC disponibles dans la base
             </span>
             <span>
               Cliquez sur un article pour le sélectionner
